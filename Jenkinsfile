@@ -1,23 +1,25 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Declarative: Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
+    triggers {
+        // Trigger pipeline on GitHub push (if webhook is configured)
+        pollSCM('* * * * *') // optional, otherwise use GitHub webhook
+    }
 
+    stages {
         stage('Clone Repository') {
             steps {
+                // Clone your Flask app from GitHub
                 git url: 'https://github.com/fatimababar4888/flask-app.git', branch: 'main'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Use full path to python.exe to create virtual environment
-                bat 'C:\\Users\\sanaz\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe -m venv venv'
+                // Create virtual environment
+                bat 'python -m venv venv'
+                
+                // Upgrade pip and install dependencies
                 bat 'venv\\Scripts\\pip install --upgrade pip'
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
@@ -25,19 +27,24 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
+                // Run tests using pytest
                 bat 'venv\\Scripts\\pytest tests'
             }
         }
 
         stage('Build Application') {
             steps {
-                echo 'Building application...'
+                echo 'Building Flask app...'
+                // Optional: zip the app folder for deployment
+                bat 'powershell Compress-Archive -Path * -DestinationPath flask-app.zip'
             }
         }
 
-        stage('Deploy (Simulated)') {
+        stage('Deploy Application (Simulated)') {
             steps {
-                echo 'Deploying application (simulated)...'
+                echo 'Deploying Flask app (simulated)...'
+                // Copy files to a target folder to simulate deployment
+                bat 'xcopy /E /Y * C:\\flask-app-deploy\\'
             }
         }
     }
