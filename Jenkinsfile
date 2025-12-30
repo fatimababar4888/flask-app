@@ -1,21 +1,23 @@
 pipeline {
     agent any
 
-    triggers {
-        githubPush()
-    }
-
     stages {
+        stage('Declarative: Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/fatimababar4888/flask-app.git'
+                git url: 'https://github.com/fatimababar4888/flask-app.git', branch: 'main'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                bat 'py -m venv venv'
+                // Use full path to python.exe to create virtual environment
+                bat 'C:\\Users\\sanaz\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe -m venv venv'
                 bat 'venv\\Scripts\\pip install --upgrade pip'
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
@@ -23,26 +25,27 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                bat 'venv\\Scripts\\pytest || exit /b 0'
+                bat 'venv\\Scripts\\pytest tests'
             }
         }
 
         stage('Build Application') {
             steps {
-                bat 'if not exist build mkdir build'
-                bat 'xcopy /E /I /Y * build\\'
+                echo 'Building application...'
             }
         }
 
         stage('Deploy (Simulated)') {
             steps {
-                bat 'if not exist C:\\tmp\\flask-deploy mkdir C:\\tmp\\flask-deploy'
-                bat 'xcopy /E /I /Y build\\* C:\\tmp\\flask-deploy\\'
+                echo 'Deploying application (simulated)...'
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline finished.'
+        }
         success {
             echo 'Pipeline completed successfully!'
         }
