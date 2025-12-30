@@ -1,64 +1,61 @@
 pipeline {
     agent any
 
-    triggers {
-        // Poll GitHub repo every minute (adjust as needed)
-        pollSCM('* * * * *')
-    }
-
     environment {
-        // Absolute path to Python with quotes to handle spaces
-        PYTHON = '"C:\\Program Files\\Python314\\python.exe"'
+        VENV_DIR = 'venv'
+        PYTHON = "${VENV_DIR}\\Scripts\\python"
+        PIP = "${VENV_DIR}\\Scripts\\pip"
     }
 
     stages {
-
-        stage('Clone Repository') {
+        stage('Checkout SCM') {
             steps {
-                git url: 'https://github.com/fatimababar4888/flask-app.git', branch: 'main'
+                echo 'Checking out code from Git...'
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Creating virtual environment and installing dependencies...'
-                // Create virtual environment
-                bat "${env.PYTHON} -m venv venv"
-                // Upgrade pip
-                bat 'venv\\Scripts\\pip install --upgrade pip'
-                // Install requirements
-                bat 'venv\\Scripts\\pip install -r requirements.txt'
+                bat "\"C:\\Program Files\\Python314\\python.exe\" -m venv %VENV_DIR%"
+                bat "%PIP% install --upgrade pip"
+                bat "%PIP% install -r requirements.txt"
             }
         }
 
         stage('Run Unit Tests') {
             steps {
                 echo 'Running unit tests with pytest...'
-                // Run pytest (assuming tests are in /tests folder)
-                bat 'venv\\Scripts\\pytest tests'
+                // Ensure tests are run from project root so 'app.py' is visible
+                bat "cd %WORKSPACE% && %PYTHON% -m pytest tests"
             }
         }
 
         stage('Build Application') {
             steps {
-                echo 'Building Flask app (packaging)...'
-                // Example: create a zip package of the app
-                bat 'powershell Compress-Archive -Path * -DestinationPath flask-app.zip'
+                echo 'Building application... (optional step)'
+                // Add your build steps here if needed
             }
         }
 
         stage('Deploy Application (Simulated)') {
             steps {
-                echo 'Deploying Flask app (simulated)...'
-                // Example: copy files to a deployment directory
-                bat 'xcopy /E /Y * C:\\flask-app-deploy\\'
+                echo 'Deploying application (simulated)...'
+                // Add deployment steps here if you want
             }
         }
     }
 
     post {
-        always { echo 'Pipeline finished.' }
-        success { echo 'Pipeline completed successfully!' }
-        failure { echo 'Pipeline failed — check logs.' }
+        always {
+            echo 'Pipeline finished.'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed — check logs.'
+        }
     }
 }
