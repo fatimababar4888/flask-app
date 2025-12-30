@@ -5,6 +5,7 @@ pipeline {
         VENV_DIR = 'venv'
         PYTHON = "${VENV_DIR}\\Scripts\\python"
         PIP = "${VENV_DIR}\\Scripts\\pip"
+        DEPLOY_DIR = "C:\\FlaskAppDeploy"  // Deployment folder
     }
 
     stages {
@@ -35,14 +36,19 @@ pipeline {
         stage('Build Application') {
             steps {
                 echo 'Building application... (optional step)'
-                // Add your build steps here if needed
+                // For Flask, build can be packaging or preparing app folder
+                bat "echo 'No specific build steps for Flask, just verifying workspace.'"
             }
         }
 
         stage('Deploy Application (Simulated)') {
             steps {
-                echo 'Deploying application (simulated)...'
-                // Add deployment steps here if you want
+                echo 'Simulating deployment...'
+                // Create deployment folder if it doesn't exist
+                bat "if not exist %DEPLOY_DIR% mkdir %DEPLOY_DIR%"
+                // Copy all app files to deployment folder
+                bat "xcopy /E /I /Y %WORKSPACE%\\* %DEPLOY_DIR%\\"
+                echo "Files deployed to %DEPLOY_DIR%"
             }
         }
     }
