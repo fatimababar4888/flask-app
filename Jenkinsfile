@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     triggers {
-        // Trigger pipeline on GitHub push (optional if you also use webhooks)
-        pollSCM('* * * * *') 
+        // Poll GitHub repo every minute (adjust as needed)
+        pollSCM('* * * * *')
     }
 
     environment {
-        // Absolute path to the system-wide Python
-        PYTHON = "C:\\Program Files\\Python314\\python.exe"
+        // Absolute path to Python with quotes to handle spaces
+        PYTHON = '"C:\\Program Files\\Python314\\python.exe"'
     }
 
     stages {
@@ -21,27 +21,29 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
+                echo 'Creating virtual environment and installing dependencies...'
                 // Create virtual environment
                 bat "${env.PYTHON} -m venv venv"
                 // Upgrade pip
-                bat "venv\\Scripts\\pip install --upgrade pip"
-                // Install dependencies from requirements.txt
-                bat "venv\\Scripts\\pip install -r requirements.txt"
+                bat 'venv\\Scripts\\pip install --upgrade pip'
+                // Install requirements
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
+                echo 'Running unit tests with pytest...'
                 // Run pytest (assuming tests are in /tests folder)
-                bat "venv\\Scripts\\pytest tests"
+                bat 'venv\\Scripts\\pytest tests'
             }
         }
 
         stage('Build Application') {
             steps {
-                echo 'Building Flask app...'
+                echo 'Building Flask app (packaging)...'
                 // Example: create a zip package of the app
-                bat "powershell Compress-Archive -Path * -DestinationPath flask-app.zip"
+                bat 'powershell Compress-Archive -Path * -DestinationPath flask-app.zip'
             }
         }
 
@@ -49,7 +51,7 @@ pipeline {
             steps {
                 echo 'Deploying Flask app (simulated)...'
                 // Example: copy files to a deployment directory
-                bat "xcopy /E /Y * C:\\flask-app-deploy\\"
+                bat 'xcopy /E /Y * C:\\flask-app-deploy\\'
             }
         }
     }
